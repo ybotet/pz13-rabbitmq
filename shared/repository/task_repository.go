@@ -2,15 +2,135 @@ package repository
 
 import (
 	"context"
+	"database/sql"
+	"fmt"
 
-	"github.com/ybotet/pz8-pipelineCICD-go/shared/models"
+	"github.com/sirupsen/logrus"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/models"
 )
 
-type TaskRepository interface {
-	GetAll(ctx context.Context) ([]*models.Task, error)
-	GetByID(ctx context.Context, id string) (*models.Task, error)
-	GetByStatus(ctx context.Context, done bool) ([]*models.Task, error)
-	Create(ctx context.Context, task *models.Task) error
-	Update(ctx context.Context, task *models.Task) error
-	Delete(ctx context.Context, id string) error
+type PostgresTaskRepository struct {
+	db     *sql.DB
+	logger *logrus.Logger
+}
+
+func NewPostgresTaskRepository(db *sql.DB, log *logrus.Logger) *PostgresTaskRepository {
+	return &PostgresTaskRepository{
+		db:     db,
+		logger: log,
+	}
+}
+
+func (r *PostgresTaskRepository) GetAll(ctx context.Context) ([]*models.Task, error) {
+	query := `SELECT id, title, description, done, created_at, updated_at FROM tasks`
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []*models.Task
+	for rows.Next() {
+		task := &models.Task{}
+		var updatedAt sql.NullString
+		
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Done, &task.CreatedAt, &updatedAt)
+		if err != nil {
+			return nil, err
+		}
+		
+		// Convertir NULL a string vacío
+		if updatedAt.Valid {
+			task.UpdatedAt = updatedAt.String
+		} else {
+			task.UpdatedAt = ""
+		}
+		
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
+
+func (r *PostgresTaskRepository) GetByID(ctx context.Context, id string) (*models.Task, error) {
+	query := `SELECT id, title, description, done, created_at, updated_at FROM tasks WHERE id = $1`
+	task := &models.Task{}
+	var updatedAt sql.NullString
+	
+	err := r.db.QueryRowContext(ctx, query, id).Scan(&task.ID, &task.Title, &task.Description, &task.Done, &task.CreatedAt, &updatedAt)
+	if err == sql.ErrNoRows {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	
+	// Convertir NULL a string vacío
+	if updatedAt.Valid {
+		task.UpdatedAt = updatedAt.String
+	} else {
+		task.UpdatedAt = ""
+	}
+	
+	return task, nil
+}
+
+func (r *PostgresTaskRepository) GetByStatus(ctx context.Context, done bool) ([]*models.Task, error) {
+	query := `SELECT id, title, description, done, created_at, updated_at FROM tasks WHERE done = $1`
+	rows, err := r.db.QueryContext(ctx, query, done)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tasks []*models.Task
+	for rows.Next() {
+		task := &models.Task{}
+		var updatedAt sql.NullString
+		
+		err := rows.Scan(&task.ID, &task.Title, &task.Description, &task.Done, &task.CreatedAt, &updatedAt)
+		if err != nil {
+			return nil, err
+		}
+		
+		if updatedAt.Valid {
+			task.UpdatedAt = updatedAt.String
+		} else {
+			task.UpdatedAt = ""
+		}
+		
+		tasks = append(tasks, task)
+	}
+	return tasks, nil
+}
+
+func (r *PostgresTaskRepository) Create(ctx context.Context, task *models.Task) error {
+	query := `INSERT INTO tasks (id, title, description, done, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)`
+	_, err := r.db.ExecContext(ctx, query, task.ID, task.Title, task.Description, task.Done, task.CreatedAt, task.UpdatedAt)
+	return err
+}
+
+func (r *PostgresTaskRepository) Update(ctx context.Context, task *models.Task) error {
+	query := `UPDATE tasks SET title = $1, description = $2, done = $3, updated_at = $4 WHERE id = $5`
+	result, err := r.db.ExecContext(ctx, query, task.Title, task.Description, task.Done, task.UpdatedAt, task.ID)
+	if err != nil {
+		return err
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return fmt.Errorf("task not found: %s", task.ID)
+	}
+	return nil
+}
+
+func (r *PostgresTaskRepository) Delete(ctx context.Context, id string) error {
+	query := `DELETE FROM tasks WHERE id = $1`
+	result, err := r.db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+	rows, _ := result.RowsAffected()
+	if rows == 0 {
+		return fmt.Errorf("task not found: %s", id)
+	}
+	return nil
 }

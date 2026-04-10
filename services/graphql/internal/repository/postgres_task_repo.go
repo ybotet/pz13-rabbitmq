@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/sirupsen/logrus"
-	"github.com/ybotet/pz8-pipelineCICD-go/shared/models"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/models"
 )
 
 type PostgresTaskRepository struct {

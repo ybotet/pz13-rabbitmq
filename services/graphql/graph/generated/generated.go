@@ -15,8 +15,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/introspection"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/graph/model"
-	"github.com/ybotet/pz8-pipelineCICD-go/shared/models"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/services/graphql/graph/model"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/models"
 )
 
 // region    ************************** generated!.gotpl **************************

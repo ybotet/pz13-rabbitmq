@@ -16,11 +16,11 @@ resolver:
   filename_template: "{name}.resolvers.go"
 
 autobind:
-  - "github.com/ybotet/pz8-pipelineCICD-go/shared/models"
+  - "github.com/ybotet/pz12-REST_vs_GraphQL/shared/models"
 
 models:
   ID:
     model:
       - github.com/99designs/gqlgen/graphql.ID
   Task:
-    model: github.com/ybotet/pz8-pipelineCICD-go/shared/models.Task
+    model: github.com/ybotet/pz12-REST_vs_GraphQL/shared/models.Task

@@ -2,7 +2,7 @@ package graph
 
 import (
 	"github.com/sirupsen/logrus"
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/internal/repository"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/repository"
 )
 
 type Resolver struct {

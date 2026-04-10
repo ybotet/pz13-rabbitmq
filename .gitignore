@@ -1,6 +1,0 @@
-*.exe
-*.log
-*.pem
-.env
-tmp/
-bin/

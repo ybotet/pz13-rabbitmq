@@ -14,10 +14,10 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	_ "github.com/lib/pq"
 
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/graph"
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/graph/generated"
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/internal/repository"
-	"github.com/ybotet/pz8-pipelineCICD-go/shared/logger"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/services/graphql/graph"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/services/graphql/graph/generated"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/logger"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/repository"
 )
 
 func main() {

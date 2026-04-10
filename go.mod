@@ -1,4 +1,4 @@
-module github.com/ybotet/pz8-pipelineCICD-go
+module github.com/ybotet/pz12-REST_vs_GraphQL
 
 go 1.25.1
 
@@ -7,11 +7,11 @@ require (
 	github.com/golang-jwt/jwt/v5 v5.2.0
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/mux v1.8.1
-	github.com/lib/pq v1.11.2
+	github.com/lib/pq v1.12.3
 	github.com/redis/go-redis/v9 v9.18.0
 	github.com/sirupsen/logrus v1.9.4
 	github.com/vektah/gqlparser/v2 v2.5.11
-	github.com/ybotet/pz8-pipelineCICD-go/gen v0.0.0-00010101000000-000000000000
+	github.com/ybotet/pz12-REST_vs_GraphQL/gen v0.0.0-00010101000000-000000000000
 	google.golang.org/grpc v1.79.1
 )
 
@@ -32,4 +32,4 @@ require (
 )
 
 // Si tienes código generado en /gen, mantenemos el replace
-replace github.com/ybotet/pz8-pipelineCICD-go/gen => ./gen
+replace github.com/ybotet/pz12-REST_vs_GraphQL/gen => ./gen

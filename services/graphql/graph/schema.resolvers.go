@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/graph/generated"
-	"github.com/ybotet/pz8-pipelineCICD-go/services/graphql/graph/model"
-	"github.com/ybotet/pz8-pipelineCICD-go/shared/models"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/services/graphql/graph/generated"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/services/graphql/graph/model"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/models"
 )
 
 func (r *Resolver) Tasks(ctx context.Context) ([]*models.Task, error) {
