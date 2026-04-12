@@ -102,6 +102,10 @@ go h.publishTaskCreatedEvent(task.ID)
 ![alt text](<public/Снимок экрана 2026-04-12 221352.png>)
 
 
+### RabbitMQ
+
+![alt text](<public/Снимок экрана 2026-04-12 220312.png>)
+
 ## Контрольные вопросы
 
 1. Зачем нужен брокер сообщений, если есть HTTP?
