@@ -9,7 +9,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/sirupsen/logrus"
 
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/events"
 	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/models"
+	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/rabbit"
 	"github.com/ybotet/pz12-REST_vs_GraphQL/shared/repository"
 )
 
@@ -23,18 +25,24 @@ type CreateTaskRequest struct {
 type UpdateTaskRequest struct {
 	Title       *string `json:"title,omitempty"`
 	Description *string `json:"description,omitempty"`
+	rabbit    interface{}
 	Done        *bool   `json:"done,omitempty"`
 }
 
 type TaskHandler struct {
-	repo   *repository.PostgresTaskRepository
-	logger *logrus.Logger
+	repo      *repository.PostgresTaskRepository
+	logger    *logrus.Logger
+	rabbit    interface{} // Temporal hasta crear el tipo RabbitClient
+	queueName string
 }
 
-func NewTaskHandler(repo *repository.PostgresTaskRepository, logger *logrus.Logger) *TaskHandler {
+func NewTaskHandler(repo *repository.PostgresTaskRepository, logger *logrus.Logger, rabbit interface{}, queueName string,) *TaskHandler {
 	return &TaskHandler{
 		repo:   repo,
 		logger: logger,
+		rabbit:    rabbit,
+		queueName: queueName,
+
 	}
 }
 
@@ -87,7 +95,6 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Validación básica
 	if req.Title == "" {
 		http.Error(w, `{"error":"title is required"}`, http.StatusBadRequest)
 		return
@@ -109,9 +116,53 @@ func (h *TaskHandler) CreateTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	//  Publicar evento de forma asíncrona (best effort)
+	go h.publishTaskCreatedEvent(task.ID)
+
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(task)
+}
+
+// Añadir este método al TaskHandler
+func (h *TaskHandler) SetRabbitClient(rabbit interface{}, queueName string) {
+	h.rabbit = rabbit
+	h.queueName = queueName
+	h.logger.Info("RabbitMQ client set in handler")
+}
+
+// Actualizar publishTaskCreatedEvent para usar el cliente real
+func (h *TaskHandler) publishTaskCreatedEvent(taskID string) {
+	if h.rabbit == nil {
+		h.logger.WithField("task_id", taskID).Warn("RabbitMQ client not available, event not published")
+		return
+	}
+	
+	event := events.TaskCreatedEvent{
+		Event:   "task.created",
+		TaskID:  taskID,
+		Ts:      time.Now().UTC(),
+	}
+	
+	body, err := json.Marshal(event)
+	if err != nil {
+		h.logger.WithError(err).Error("Failed to marshal event")
+		return
+	}
+	
+	// Type assertion para usar el cliente real
+	if client, ok := h.rabbit.(*rabbit.RabbitClient); ok {
+		if err := client.PublishJSON(h.queueName, body); err != nil {
+			h.logger.WithError(err).Error("Failed to publish event")
+		} else {
+			h.logger.WithFields(logrus.Fields{
+				"task_id": taskID,
+				"queue":   h.queueName,
+			}).Info("Event published successfully")
+		}
+	} else {
+		h.logger.Error("Invalid RabbitMQ client type")
+	}
 }
 
 // UpdateTask PATCH /v1/tasks/{id}
